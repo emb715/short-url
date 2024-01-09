@@ -98,7 +98,7 @@ ApiRouter.post<string>(`/new`, async (ctx: RouterContext<string>) => {
       )
 
       const createdId = await createUrl(payload.url)
-      const shortUrl = `${SHORT_URL}/u/${createdId}`
+      const shortUrl = `${SHORT_URL}/${createdId}`
 
       const response = {
         id: createdId,

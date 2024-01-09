@@ -7,9 +7,7 @@
     "oakCors": "https://deno.land/x/cors@v1.2.2/mod.ts",
     "zod": "https://deno.land/x/zod@v3.16.1/mod.ts",
     "log": "https://deno.land/std@0.211.0/log/mod.ts",
-    "uuid": "https://deno.land/std@0.211.0/uuid/mod.ts",
     "short-uuid": "npm:short-unique-id",
-    "sentry": "npm:@sentry/node@7.91.0",
-    "lodash": "npm:lodash"
+    "sentry": "npm:@sentry/node@7.91.0"
   }
 }

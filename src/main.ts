@@ -58,7 +58,12 @@ ApiRouter.get<string>(`/:id`, async (ctx: RouterContext<string>) => {
   
   // try to retrieve an url
   const data = await getUrl(id)
+  
   const values = data.value as CreatedUrl
+  if (data.value === null) {
+    handleError(new Error('Not found'), ctx)
+    return
+  }
 
   const redirectUrl = values.url
   if (redirectUrl) {

@@ -2,7 +2,7 @@
 import ShortUniqueId from 'short-uuid'
 import { __DEV__ } from "./config.ts";
 
-const kv = await Deno.openKv('../local.db')
+const kv = await Deno.openKv()
 
 const KV_KEY = 'url'
 

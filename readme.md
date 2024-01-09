@@ -4,6 +4,8 @@ Create a short URL and redirect
 
 ## Working on [shioo.deno.dev](https://shioo.deno.dev)
 
+### Example:
+redirect to google https://shioo.deno.dev/NzpCPjVUsB
 
 ### Configuration
 Add to .env file
@@ -45,4 +47,5 @@ or
 ---
 
 ### TODO
+- Add [Zoic](https://deno.land/x/zoic@v1.0.2) (Cache layer)
 - Add analytics?

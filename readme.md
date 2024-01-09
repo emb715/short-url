@@ -1,7 +1,15 @@
+![Made with love in Deno](https://madewithlove.now.sh/af?heart=true&text=Deno)
 
-# Create short URL and redirect
+Create a short URL and redirect
 
-Add apiKey to .env file
+## Working on [shioo.deno.dev](https://shioo.deno.dev)
+
+
+### Configuration
+Add to .env file
+- API_KEY 
+- SENTRY_KEY
+
 
 ## Endpoints
 POST `/new`
@@ -28,11 +36,13 @@ GET `/:id`
 or 
 404 not found
 
-## Dependencies
+### Dependencies
 - Deno
 - Oak
 - Zod
 - Sentry
 
-## TODO
+---
+
+### TODO
 - Add analytics?

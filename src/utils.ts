@@ -1,7 +1,13 @@
 import { Context, helpers as routerHelpers, RouterContext, Status } from "oak";
 import * as z from "zod";
-import * as Sentry from 'sentry'
-import {SENTRY_KEY, __DEV__, APP_NAME, APP_VERSION, API_KEY} from './config.ts'
+import * as Sentry from "sentry";
+import {
+  __DEV__,
+  API_KEY,
+  APP_NAME,
+  APP_VERSION,
+  SENTRY_KEY,
+} from "./config.ts";
 // import { routerHelpers, z } from "../deps.ts";
 // import { CustomError, ErrorStatusList, ErrorTypes } from "./handle_error.ts";
 // import type { RouterContext } from "../deps.ts";
@@ -12,10 +18,7 @@ type ResponseParams = {
   body?: string | object;
 };
 
-export function handleResponse(
-  ctx: Context,
-  params: ResponseParams,
-): void {
+export function handleResponse(ctx: Context, params: ResponseParams): void {
   ctx.response.status = params.status;
   ctx.response.body = params.body;
   return;
@@ -41,46 +44,42 @@ export function handleSuccess(
   });
 }
 
-
 export const AuthMiddleware = () => {
-  return async (
-    ctx: Context,
-    next: () => Promise<unknown>,
-  ) => {
+  return async (ctx: Context, next: () => Promise<unknown>) => {
     try {
-      const authHeader = ctx.request.headers.get('apiKey')?.trim() ?? null
-      console.log('LOG: > AuthMiddleware > authHeader:', authHeader)
+      const authHeader = ctx.request.headers.get("apiKey")?.trim() ?? null;
+      console.log("LOG: > AuthMiddleware > authHeader:", authHeader);
       if (!authHeader) {
         throw new ServerError("MISSING API KEY");
       }
       if (authHeader !== API_KEY) {
         throw new ServerError("INVALID API KEY");
       }
-      await next()
+      await next();
     } catch (err) {
-      console.log('LOG: > AuthMiddleware > err:', err)
-      handleError(err, ctx)
+      console.log("LOG: > AuthMiddleware > err:", err);
+      handleError(err as Error, ctx);
     }
-  }
-}
+  };
+};
 
 Sentry.init({
   dsn: SENTRY_KEY,
   onFatalError: (error) => {
-    console.log('LOG: > onFatalError:', error)
+    console.log("LOG: > onFatalError:", error);
   },
-  environment: __DEV__ ? 'development' : 'production',
+  environment: __DEV__ ? "development" : "production",
   debug: __DEV__,
 
   release: `${APP_NAME}@${APP_VERSION}`,
-})
+});
 
 class ErrorLogger {
   constructor() {}
 
   // TODO: Implement this
   configureScope(options: any) {
-    console.log('NOT IMPLEMENTED: ErrorLogger.configureScope')
+    console.log("NOT IMPLEMENTED: ErrorLogger.configureScope");
     // Sentry.configureScope((scope: Sentry.Scope) => {
     // scope.setExtra('battery', 0.7);
     // scope.setTag('user_mode', 'admin');
@@ -90,39 +89,37 @@ class ErrorLogger {
   }
 
   captureException(e: Error) {
-    Sentry.captureException(e)
+    Sentry.captureException(e);
   }
   captureEvent(event: Sentry.Event) {
-    Sentry.captureEvent(event)
+    Sentry.captureEvent(event);
   }
   captureMessage(message: string) {
-    Sentry.captureMessage(message)
+    Sentry.captureMessage(message);
   }
 }
-export const errorLogger = new ErrorLogger()
-
-
+export const errorLogger = new ErrorLogger();
 
 enum ErrorTypes {
-  ZodError = 'zodError',
-  HttpError = 'httpError',
-  ServerError = 'serverError',
+  ZodError = "zodError",
+  HttpError = "httpError",
+  ServerError = "serverError",
 }
 
 class CustomError extends Error {
-  _type: ErrorTypes
-  message: string
-  cause?: string
-  status?: ErrorStatusList
+  _type: ErrorTypes;
+  override message: string;
+  override cause?: string;
+  status?: ErrorStatusList;
   constructor(
     message: string,
     options: { type: ErrorTypes; cause?: string; status?: ErrorStatusList },
   ) {
-    super(message)
-    this._type = options.type
-    this.message = message
-    options?.cause && (this.cause = options.cause)
-    options?.status && (this.status = options.status)
+    super(message);
+    this._type = options.type;
+    this.message = message;
+    options?.cause && (this.cause = options.cause);
+    options?.status && (this.status = options.status);
   }
 }
 
@@ -131,7 +128,7 @@ class ServerError extends CustomError {
     super(message, {
       ...options,
       type: ErrorTypes.ServerError,
-    })
+    });
   }
 }
 
@@ -153,46 +150,47 @@ const handleError = (error: CustomError | Error, ctx: Context) => {
         status: ErrorStatusList.BadRequest,
         body: {
           error: error?.issues,
-          ...__DEV__ && { ['__DEV__']: error },
+          ...(__DEV__ && { ["__DEV__"]: error }),
         },
-      })
+      });
     } else if (error instanceof ServerError) {
-      throw error
+      throw error;
     } else if (
-      error instanceof CustomError && error._type === ErrorTypes.HttpError
+      error instanceof CustomError &&
+      error._type === ErrorTypes.HttpError
     ) {
       handleResponse(ctx, {
         status: error?.status || ErrorStatusList.BadRequest,
         body: {
           error: error.message,
-          ...__DEV__ && { ['__DEV__']: error },
+          ...(__DEV__ && { ["__DEV__"]: error }),
         },
-      })
+      });
     } else if (error instanceof Error) {
       handleResponse(ctx, {
         status: ErrorStatusList.NotFound,
         body: {
           error: error.message,
-          ...__DEV__ && { ['__DEV__']: error },
+          ...(__DEV__ && { ["__DEV__"]: error }),
         },
-      })
+      });
     }
   } catch (err) {
-    const message = err?.message || ''
+    // @ts-expect-error message
+    const message = err?.message || "";
     handleResponse(ctx, {
       status: ErrorStatusList.InternalServerError,
       body: {
         message,
-        ...__DEV__ && { ['__DEV__']: error },
+        ...(__DEV__ && { ["__DEV__"]: error }),
       },
-    })
+    });
     // Error Log Service
-    errorLogger.captureException(error)
+    errorLogger.captureException(error);
   }
-}
+};
 
-export { CustomError, ErrorStatusList, ErrorTypes, handleError, ServerError }
-
+export { CustomError, ErrorStatusList, ErrorTypes, handleError, ServerError };
 
 export async function schemaParser<T extends z.AnyZodObject>(
   schema: T,
@@ -218,5 +216,3 @@ export async function schemaParser<T extends z.AnyZodObject>(
     body,
   });
 }
-
-

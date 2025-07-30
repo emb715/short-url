@@ -1,45 +1,59 @@
 /// <reference lib="deno.unstable" />
-import ShortUniqueId from 'short-uuid'
+import ShortUniqueId from "short-uuid";
 import { __DEV__ } from "./config.ts";
 
-const KV_DB = __DEV__ ? '../local.db' : undefined
-const kv = await Deno.openKv(KV_DB)
+const KV_DB = __DEV__ ? "../local.db" : undefined;
+const kv = await Deno.openKv(KV_DB);
 
-const KV_KEY = 'url'
+const KV_KEY = "url";
 
-function generateId({
-  type = 'random'
-}: {type?: string} = {}) {
+function generateId({ type = "random" }: { type?: string } = {}) {
   //@ts-ignore
   const uid = new ShortUniqueId({ length: 10 });
-  if (type === 'random') {
-    return uid.rnd() as string
+  if (type === "random") {
+    return uid.rnd() as string;
   } else {
     // timestamp
-    return  uid.stamp(10) as string
+    return uid.stamp(10) as string;
   }
-
 }
 
 export type CreatedUrl = {
-  url: string
-  createdAt: string
-}
+  url: string;
+  createdAt: string;
+};
 
 export async function createUrl(url: string) {
-  const id = generateId()
+  const id = generateId();
   const payload = {
     url,
-    createdAt: Date.now()
-  }
-  await kv.set([KV_KEY, id], payload)
+    createdAt: Date.now(),
+  };
+  await kv.set([KV_KEY, id], payload);
 
-  return id
+  return id;
+}
+export async function setUrl({ id: _id, url }: { id?: string; url: string }) {
+  const id = _id || generateId();
+  const timestamp = _id
+    ? {
+      updatedAt: Date.now(),
+    }
+    : {
+      createdAt: Date.now(),
+    };
+  const payload = {
+    url,
+    ...timestamp,
+  };
+  await kv.set([KV_KEY, id], payload);
+
+  return id;
 }
 
 export async function getUrl(id: string) {
   if (!id) {
     throw new Error("getUrl. No ID given");
   }
-  return await kv.get([KV_KEY, id])
+  return await kv.get([KV_KEY, id]);
 }
